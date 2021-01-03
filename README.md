@@ -1,4 +1,4 @@
-# AmazonMovies_FrontAndBackEnd
+# AmazonMovies_Front-Back
 数据仓库项目前后端
 
 ## 简介
