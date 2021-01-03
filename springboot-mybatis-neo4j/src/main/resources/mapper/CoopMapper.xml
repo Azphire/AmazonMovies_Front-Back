@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neo4j.mapper.CoopMapper">
+
+    <select id="getCoopAD" resultType="com.neo4j.model.CooperationModel">
+        MATCH (d)-[dir:direct]-&gt;(m)&lt;-[act:star]-(a)
+        WITH d,count(*) as count,a
+        WHERE count&gt;#{count}
+        RETURN d.dname as director1,a.aname as actor1,count
+        LIMIT 20;
+    </select>
+    <select id="getCoopAA" resultType="com.neo4j.model.CooperationModel">
+        MATCH (a1:actor)-[act1:star]-&gt;(m)&lt;-[act2:star]-(a2:actor)
+        WITH a1,count(*) as count,a2
+        WHERE a1.aname &lt; a2.aname and count&gt;10
+        RETURN a1.aname as actor1,a2.aname as actor2,count
+        LIMIT 20;
+    </select>
+    <select id="getCoopDD" resultType="com.neo4j.model.CooperationModel">
+        MATCH (d1:director)-[dir1:direct]-&gt;(m)&lt;-[dir2:direct]-(d2:director)
+        WITH d1,count(*) as count,d2
+        WHERE d1.dname &lt; d2.dname and count&gt;10
+        RETURN d1.dname as director1,d2.dname as director2,count
+        LIMIT 20;
+    </select>
+    <select id="getActorByDirector" resultType="com.neo4j.model.CooperationModel">
+        MATCH (d)-[dir:direct]-&gt;(m)&lt;-[act:star]-(a)
+        WITH d,count(*) as count,a
+        WHERE d.dname = #{director} and count&gt;#{count}
+        RETURN a.aname as actor1,count
+        LIMIT 20;
+    </select>
+    <select id="getActorByActor" resultType="com.neo4j.model.CooperationModel">
+        MATCH (a1:actor{aname:#{actor}})-[act1:star]-&gt;(m)&lt;-[act2:star]-(a2:actor)
+        WITH a1,count(*) as count,a2
+        WHERE a2.aname &lt;&gt; #{actor} and count>#{count}
+        RETURN a2.aname as actor1,count
+        LIMIT 20;
+    </select>
+    <select id="getDirectorByDirector" resultType="com.neo4j.model.CooperationModel">
+        MATCH (d1:director{dname:#{director}})-[dir1:direct]-&gt;(m)&lt;-[dir2:direct]-(d2:director)
+        WITH d1,count(*) as count,d2
+        WHERE d2.dname &lt;&gt; #{director} and count>#{count}
+        RETURN d2.dname as director1,count
+        LIMIT 20;
+    </select>
+    <select id="getDirectorByActor" resultType="com.neo4j.model.CooperationModel">
+        MATCH (d)-[dir:direct]-&gt;(m)&lt;-[act:star]-(a)
+        WITH d,count(*) as count,a
+        WHERE a.aname = #{actor} and count>#{count}
+        RETURN d.dname as director1,count
+        LIMIT 20;
+    </select>
+</mapper>

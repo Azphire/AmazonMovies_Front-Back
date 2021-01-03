@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mysql.mapper.MovieMapper">
+    <select id="getByYear" parameterType="String" resultType="com.mysql.model.MovieModel">
+        SELECT * FROM movie
+        WHERE movie.year like '${year}%' limit 10;
+    </select>
+    <select id="getByMonth" resultType="com.mysql.model.MovieModel">
+        SELECT * FROM movie
+        WHERE movie.year like '${month}%' limit 10;
+    </select>
+    <select id="getByDate" resultType="com.mysql.model.MovieModel">
+        SELECT * FROM movie
+        WHERE movie.year = #{date} limit 10;
+    </select>
+    <select id="getBySpan" resultType="com.mysql.model.MovieModel">
+        SELECT * FROM movie
+        WHERE movie.year between str_to_date(#{start},'%Y/%m/%d') and str_to_date(#{end},'%Y/%m/%d') limit 10;
+    </select>
+    <select id="countByYear" resultType="java.lang.Integer">
+        SELECT count(*) FROM movie
+        WHERE movie.year like '${year}%';
+    </select>
+    <select id="countByMonth" resultType="java.lang.Integer">
+        SELECT count(*) FROM movie
+        WHERE movie.year like '${month}%';
+    </select>
+    <select id="countBySpan" resultType="java.lang.Integer">
+        SELECT count(*) FROM movie
+        WHERE movie.year between str_to_date(#{start},'%Y/%m/%d') and str_to_date(#{end},'%Y/%m/%d');
+    </select>
+    <select id="countByDate" resultType="java.lang.Integer">
+        SELECT count(*) FROM movie
+        WHERE movie.year = #{date};
+    </select>
+    <select id="getByTitle" resultType="com.mysql.model.SubMovieModel">
+        SELECT *
+        FROM submovie INNER JOIN movie ON submovie.ID = movie.ID
+        WHERE movie.title = #{title} limit 10;
+    </select>
+    <select id="countByTitle" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM submovie INNER JOIN movie ON submovie.ID = movie.ID
+        WHERE movie.title = #{title};
+    </select>
+    <select id="getByDirector" resultType="com.mysql.model.MovieModel">
+        SELECT *
+        FROM movie
+        WHERE movie.director like '%${director}%' limit 10;
+    </select>
+    <select id="countByDirector" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM movie
+        WHERE movie.director like '%${director}%';
+    </select>
+    <select id="getByActor" resultType="com.mysql.model.MovieModel">
+        SELECT *
+        FROM movie
+        WHERE movie.actor like '%${actor}%' limit 10;
+    </select>
+    <select id="countByActor" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM movie
+        WHERE movie.actor like '%${actor}%';
+    </select>
+    <select id="getByType" resultType="com.mysql.model.MovieModel">
+        SELECT *
+        FROM movie
+        WHERE movie.gerne like '%${type}%' limit 10;
+    </select>
+    <select id="countByType" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM movie
+        WHERE movie.gerne like '%${type}%';
+    </select>
+    <select id="getByScore" resultType="com.mysql.model.MovieModel">
+        SELECT *
+        FROM movie
+        WHERE movie.score > #{score} limit 10;
+    </select>
+    <select id="countByScore" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM movie
+        WHERE movie.score > #{score};
+    </select>
+    <select id="getByMulti" resultType="com.mysql.model.MovieModel">
+        SELECT *
+        FROM movie
+        <where>
+            movie.score > #{score}
+            <if test="type!=null and type!=''">
+                AND movie.gerne like '%${type}%'
+            </if>
+            <if test="year!=null and year!=''">
+                AND movie.year like '${year}%'
+            </if>
+            <if test="actor!=null and type!=''">
+                AND movie.actor like '%${actor}%'
+            </if>
+            <if test="director!=null and type!=''">
+                AND movie.director like '%${director}%'
+            </if>
+        </where>
+        LIMIT 20;
+    </select>
+    <select id="countByMulti" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM movie
+        <where>
+            movie.score > #{score}
+            <if test="type!=null and type!=''">
+                AND movie.gerne like '%${type}%'
+            </if>
+            <if test="year!=null and year!=''">
+                AND movie.year like '${year}%'
+            </if>
+            <if test="actor!=null and type!=''">
+                AND movie.actor like '%${actor}%'
+            </if>
+            <if test="director!=null and type!=''">
+                AND movie.director like '%${director}%'
+            </if>
+        </where>
+    </select>
+    <select id="getByComment" resultType="com.mysql.model.MovieModel">
+        SELECT distinct movie.title, movie.actor, movie.director, movie.score, movie.runtime, movie.gerne, movie.language, movie.year, movie.producer
+        FROM movie INNER JOIN submovie ON movie.ID = submovie.ID
+                 INNER JOIN review ON submovie.asin = review.asin
+        WHERE review.active > 0 and review.active/(review.inactive+review.active) &gt; #{ratio}
+        LIMIT 10;
+    </select>
+    <select id="countByComment" resultType="java.lang.Integer">
+        SELECT count(distinct movie.title)
+        FROM movie INNER JOIN submovie ON movie.ID = submovie.ID
+                   INNER JOIN review ON submovie.asin = review.asin
+        WHERE review.active > 0 and review.active/(review.inactive+review.active) &gt; #{ratio};
+    </select>
+    <select id="getMostPopular" resultType="com.mysql.model.MovieModel">
+        SELECT movie.title, movie.actor, movie.director, movie.score, movie.runtime, movie.gerne, movie.language, movie.year, movie.producer
+        FROM movie
+                 INNER JOIN submovie
+                            ON movie.ID = submovie.ID
+                 INNER JOIN review
+                            ON review.asin = submovie.asin
+        WHERE movie.year like '${year}%'
+        GROUP BY movie.title,movie.score
+        ORDER BY count(review.asin) DESC
+        limit 3;
+
+    </select>
+    <select id="getMostUnpopular" resultType="com.mysql.model.MovieModel">
+        SELECT movie.title, movie.actor, movie.director, movie.score, movie.runtime, movie.gerne, movie.language, movie.year, movie.producer
+        FROM movie
+        INNER JOIN submovie
+        ON movie.ID = submovie.ID
+        INNER JOIN review
+        ON review.asin = submovie.asin
+        WHERE movie.year like '${year}%' and movie.score&lt;2
+        GROUP BY movie.title,movie.score
+        ORDER BY count(review.asin) DESC
+        limit 3;
+    </select>
+</mapper>

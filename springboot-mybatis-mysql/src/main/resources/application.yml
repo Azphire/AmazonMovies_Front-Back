@@ -1,0 +1,21 @@
+#端口号
+server:
+  port: 8018
+
+spring:
+  application:
+    name: springboot-mybatis-mysql #服务名
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    password: asdf-1234
+    url: jdbc:mysql://localhost:3306/dwmysql?useUnicode=true&useSSL=false&serverTimezone=Asia/Shanghai
+    name: mysql
+    username: root
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+
+
+
+

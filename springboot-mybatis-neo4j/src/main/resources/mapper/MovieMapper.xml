@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neo4j.mapper.MovieMapper">
+
+    <select id="getByYear" resultType="com.neo4j.model.MovieModel">
+        MATCH (m:movie)
+        WHERE m.release =~ '${year}.*'
+        RETURN m.title as title,m.actor as actor,m.producer as producer,m.director as director,toFloat(m.score) as score,
+            m.gerne as gerne,m.release as release,m.language as language,toInt(m.ID) as ID,m.runtime as runtime
+        LIMIT 20;
+    </select>
+    <select id="getByMonth" resultType="com.neo4j.model.MovieModel">
+        MATCH (m:movie)
+        WHERE m.release =~ '${month}.*'
+        RETURN m.title as title,m.actor as actor,m.producer as producer,m.director as director,toFloat(m.score) as score,
+            m.gerne as gerne,m.release as release,m.language as language,toInt(m.ID) as ID,m.runtime as runtime
+        LIMIT 20;
+    </select>
+    <select id="getBySpan" resultType="com.neo4j.model.MovieModel">
+        MATCH (m:movie)
+        WHERE m.release =~ ".*-.*-.*" and date(#{start}) &lt;= date(m.release) &lt;= date(#{end})
+        RETURN m.title as title,m.actor as actor,m.producer as producer,m.director as director,toFloat(m.score) as score,
+            m.gerne as gerne,m.release as release,m.language as language,toInt(m.ID) as ID,m.runtime as runtime
+        LIMIT 20;
+    </select>
+    <select id="getByDate" resultType="com.neo4j.model.MovieModel">
+        MATCH (m:movie)
+        WHERE m.release = #{date}
+        RETURN m.title as title,m.actor as actor,m.producer as producer,m.director as director,toFloat(m.score) as score,
+        m.gerne as gerne,m.release as release,m.language as language,toInt(m.ID) as ID,m.runtime as runtime
+        LIMIT 20;
+    </select>
+    <select id="countByYear" resultType="java.lang.Integer">
+        MATCH (m:movie)
+        WHERE m.release =~ '${year}.*'
+        RETURN count(*);
+    </select>
+    <select id="countByMonth" resultType="java.lang.Integer">
+        MATCH (m:movie)
+        WHERE m.release =~ '${month}.*'
+        RETURN count(*);
+    </select>
+    <select id="countBySpan" resultType="java.lang.Integer">
+        MATCH (m:movie)
+        WHERE m.release =~ ".*-.*-.*" and date(#{start}) &lt;= date(m.release) &lt;= date(#{end})
+        RETURN count(*);
+    </select>
+    <select id="countByDate" resultType="java.lang.Integer">
+        MATCH (m:movie)
+        WHERE m.release = #{date}
+        RETURN count(*);
+    </select>
+
+    <select id="getByTitle" resultType="com.neo4j.model.SubMovieModel">
+        MATCH (m)&lt;-[b:belong]-(s)
+        WHERE m.title = #{title}
+        RETURN s.asin as asin,toFloat(s.score) as score,s.format as format,s.version as version
+        LIMIT 20;
+    </select>
+    <select id="countByTitle" resultType="java.lang.Integer">
+        MATCH (m)&lt;-[b:belong]-(s)
+        WHERE m.title = #{title}
+        RETURN count(*);
+    </select>
+    <select id="getByDirector" resultType="com.neo4j.model.MovieModel">
+        MATCH (m:movie)
+        WHERE m.director =~ '.*${director}.*'
+        RETURN m.title as title,m.actor as actor,m.producer as producer,m.director as director,toFloat(m.score) as score,
+        m.gerne as gerne,m.release as release,m.language as language,toInt(m.ID) as ID,m.runtime as runtime
+        LIMIT 20;
+    </select>
+    <select id="countByDirector" resultType="java.lang.Integer">
+        MATCH (m:movie)
+        WHERE m.director =~ '.*${director}.*'
+        RETURN count(*);
+    </select>
+    <select id="getByActor" resultType="com.neo4j.model.MovieModel">
+        MATCH (m:movie)
+        WHERE m.actor =~ '.*${actor}.*'
+        RETURN m.title as title,m.actor as actor,m.producer as producer,m.director as director,toFloat(m.score) as score,
+        m.gerne as gerne,m.release as release,m.language as language,toInt(m.ID) as ID,m.runtime as runtime
+        LIMIT 20;
+    </select>
+    <select id="countByActor" resultType="java.lang.Integer">
+        MATCH (m:movie)
+        WHERE m.actor =~ '.*${actor}.*'
+        RETURN count(*);
+    </select>
+    <select id="getByType" resultType="com.neo4j.model.MovieModel">
+        MATCH (m:movie)
+        WHERE m.gerne =~ '.*${type}.*'
+        RETURN m.title as title,m.actor as actor,m.producer as producer,m.director as director,toFloat(m.score) as score,
+        m.gerne as gerne,m.release as release,m.language as language,toInt(m.ID) as ID,m.runtime as runtime
+        LIMIT 20;
+    </select>
+    <select id="countByType" resultType="java.lang.Integer">
+        MATCH (m:movie)
+        WHERE m.gerne =~ '.*${type}.*'
+        RETURN count(*);
+    </select>
+    <select id="getByScore" resultType="com.neo4j.model.MovieModel">
+        MATCH (m:movie)
+        WHERE toFloat(m.score) &gt; #{score}
+        RETURN m.title as title,m.actor as actor,m.producer as producer,m.director as director,toFloat(m.score) as score,
+        m.gerne as gerne,m.release as release,m.language as language,toInt(m.ID) as ID,m.runtime as runtime
+        LIMIT 20;
+    </select>
+    <select id="countByScore" resultType="java.lang.Integer">
+        MATCH (m:movie)
+        WHERE toFloat(m.score) &gt; #{score}
+        RETURN count(*);
+    </select>
+    <select id="getByMulti" resultType="com.neo4j.model.MovieModel">
+        MATCH (m:movie)
+        <where>
+                toFloat(m.score) &gt; #{score}
+            <if test="type!=null and type!=''">
+                AND m.gerne =~ '.*${type}.*'
+            </if>
+            <if test="year!=null and year!=''">
+                AND m.release =~ '${year}.*'
+            </if>
+            <if test="actor!=null and type!=''">
+                AND m.actor =~ '.*${actor}.*'
+            </if>
+            <if test="director!=null and type!=''">
+                AND m.director =~ '.*${director}.*'
+            </if>
+        </where>
+        RETURN m.title as title,m.actor as actor,m.producer as producer,m.director as director,toFloat(m.score) as score,
+        m.gerne as gerne,m.release as release,m.language as language,toInt(m.ID) as ID,m.runtime as runtime
+        LIMIT 20;
+    </select>
+    <select id="countByMulti" resultType="java.lang.Integer">
+        MATCH (m:movie)
+        <where>
+            toFloat(m.score) &gt; #{score}
+            <if test="type!=null and type!=''">
+                AND m.gerne =~ '.*${type}.*'
+            </if>
+            <if test="year!=null and year!=''">
+                AND m.release =~ '${year}.*'
+            </if>
+            <if test="actor!=null and type!=''">
+                AND m.actor =~ '.*${actor}.*'
+            </if>
+            <if test="director!=null and type!=''">
+                AND m.director =~ '.*${director}.*'
+            </if>
+        </where>
+        RETURN count(*);
+    </select>
+    <select id="getByComment" resultType="com.neo4j.model.MovieModel">
+        MATCH (u:user)-[r:review]->(s:submovie)-[b:belong]->(m:movie)
+        WHERE toFloat(r.active) > 0 and toFloat(r.active)/(toFloat(r.active)+toFloat(r.inactive))&gt; #{ratio}
+        RETURN distinct m.title as title,m.actor as actor,m.producer as producer,m.director as director,toFloat(m.score) as score,
+        m.gerne as gerne,m.release as release,m.language as language,toInt(m.ID) as ID,m.runtime as runtime
+        LIMIT 20;
+    </select>
+    <select id="countByComment" resultType="java.lang.Integer">
+        MATCH (u:user)-[r:review]->(s:submovie)-[b:belong]->(m:movie)
+        WHERE toFloat(r.active) > 0 and toFloat(r.active)/(toFloat(r.active)+toFloat(r.inactive))&gt; #{ratio}
+        RETURN count(distinct m);
+    </select>
+    <select id="getMostPopular" resultType="com.neo4j.model.MovieModel">
+        MATCH (u:user)-[r:review]->(s:submovie)-[b:belong]->(m:movie)
+        WHERE m.release =~ '${year}.*'
+        RETURN m.title as title,m.actor as actor,m.producer as producer,m.director as director,toFloat(m.score) as score,
+        m.gerne as gerne,m.release as release,m.language as language,toInt(m.ID) as ID,m.runtime as runtime, count(r) as count
+        ORDER BY count DESC
+        LIMIT 3;
+    </select>
+    <select id="getMostUnpopular" resultType="com.neo4j.model.MovieModel">
+        MATCH (u:user)-[r:review]->(s:submovie)-[b:belong]->(m:movie)
+        WHERE m.release =~ '${year}.*' and toFloat(m.score)&lt;2
+        RETURN m.title as title,m.actor as actor,m.producer as producer,m.director as director,toFloat(m.score) as score,
+        m.gerne as gerne,m.release as release,m.language as language,toInt(m.ID) as ID,m.runtime as runtime, count(r) as count
+        ORDER BY count DESC
+        LIMIT 3;
+    </select>
+</mapper>

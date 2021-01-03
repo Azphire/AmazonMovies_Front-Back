@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mysql.mapper.CoopMapper">
+
+    <select id="getCoopAD" resultType="com.mysql.model.CooperationModel">
+        SELECT star.actor as actor1, direct.director as director1, count(*) as count
+        FROM star INNER JOIN direct ON star.ID = direct.ID
+        GROUP BY star.actor, direct.director
+        HAVING count(*) > #{count}
+        ORDER BY count DESC LIMIT 20;
+    </select>
+    <select id="getCoopAA" resultType="com.mysql.model.CooperationModel">
+        SELECT star1.actor as actor1, star2.actor as actor2, count(*) as count
+        FROM star AS star1
+        INNER JOIN star AS star2
+        ON star1.ID = star2.ID
+        WHERE star1.actor &lt; star2.actor
+                            GROUP BY star1.actor, star2.actor
+        HAVING count(*) > #{count}
+        ORDER BY count DESC LIMIT 20;
+    </select>
+    <select id="getCoopDD" resultType="com.mysql.model.CooperationModel">
+        SELECT direct1.director as director1, direct2.director as director2, count(*) as count
+        FROM direct AS direct1
+        INNER JOIN direct AS direct2
+        ON direct1.ID = direct2.ID
+        WHERE direct1.director &lt;&gt; direct2.director and direct1.director &lt; direct2.director
+                                                                          GROUP BY direct1.director, direct2.director
+        HAVING count(*) > #{count}
+        ORDER BY count DESC LIMIT 20;
+    </select>
+    <select id="getActorByDirector" resultType="com.mysql.model.CooperationModel">
+        SELECT star.actor as actor1, count(*) as count
+        FROM star INNER JOIN direct ON star.ID = direct.ID
+        WHERE direct.director = #{director}
+        GROUP BY star.actor
+        HAVING count(*) > #{count}
+        ORDER BY count DESC;
+    </select>
+    <select id="getActorByActor" resultType="com.mysql.model.CooperationModel">
+        SELECT star1.actor as actor1, count(*) as count
+        FROM star AS star1
+        INNER JOIN star AS star2
+        ON star1.ID = star2.ID
+        WHERE star2.actor = #{actor} and star1.actor &lt;&gt; star2.actor
+        GROUP BY star1.actor
+        HAVING count(*) > #{count}
+        ORDER BY count DESC;
+    </select>
+    <select id="getDirectorByDirector" resultType="com.mysql.model.CooperationModel">
+        SELECT direct1.director as director1, count(*) as count
+        FROM direct AS direct1
+        INNER JOIN direct AS direct2
+        ON direct1.ID = direct2.ID
+        WHERE direct2.director = #{director} and direct1.director &lt;&gt; direct2.director
+        GROUP BY direct1.director
+        HAVING count(*) > #{count}
+        ORDER BY count DESC;
+    </select>
+    <select id="getDirectorByActor" resultType="com.mysql.model.CooperationModel">
+        SELECT direct.director as director1, count(*) as count
+        FROM direct INNER JOIN star ON star.ID = direct.ID
+        WHERE star.actor = #{actor}
+        GROUP BY direct.director
+        HAVING count(*) > #{count}
+        ORDER BY count DESC;
+    </select>
+</mapper>
